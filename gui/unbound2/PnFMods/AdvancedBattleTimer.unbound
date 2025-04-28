@@ -1,0 +1,143 @@
+(def constant TT_BATTLETIMER_INSTALLED "true")
+(def constant AdvBT_ELEMENT_NAME 'advBattleTimer')
+
+(def constant AdvBT_DISPLAY_MODES {
+	DISABLE : 0,
+	ENABLE  : 1,
+	ADAPTIVE: 2,
+})
+
+(def constant AdvBT_ELEMENT_SIZE {
+	WIDTH   : 60px,
+    HEIGHT  : 30px,
+})
+
+(def element BattleTimer (_battleState:number) layout=true
+)
+
+(def css $AdvBT_Text()
+    (extends $Bold)
+    (extends $FontSizeDefault)
+	(extends $FontColorDefault)
+	(extends $TextMouseDisable)
+    (extends $FontEnableReadability)
+    (marginTextTop = -6px)
+    (marginTextBottom = -5px)
+    (width = 100%)
+    (textAlign = "center")
+    (filters 
+        (dropShadow 
+            (distance = 1)
+            (angle = 45)
+            (color = 0)
+            (alpha = 1)
+            (blurX = 2.0)
+            (blurY = 2.0)
+            (strength = 0.5)
+            (quality = 1)
+        )
+    )
+)
+
+(def element AdvBT_BattleTimer () layout=true
+    (scope
+        (macro TT_GET_USERPREF)
+        (macro STAGE_SIZE)
+        (var battleDataEntity:gfx = "$datahub.getSingleEntity(CC.battleData)")
+		(var gameModeId:number = "battleDataEntity.battleInfo.gameModeId")
+
+		(var battleState:number = "battleDataEntity.battleState.battleState" (event "battleDataEntity.battleState.evBattleStateChanged"))
+        (var isBattleTimerVisible:bool = "!(isIn(gameModeId, SC.Battle.GAME_MODE.BATTLE_TIMER_HIDDEN)) && battleState == SC.Common.CLIENT_BATTLE_STATE.STARTED")
+	)
+
+    (style
+        (position = "absolute")
+        (bind width "stageWidth")
+        (bind height "stageHeight")
+    )
+
+    (controller $Instance renderer='AdvBT_BattleTimerText'
+        (bind enabled "isBattleTimerVisible")
+        (args
+            _battleState    = "battleState"
+            _userPrefsNum   = "_userPrefsNum"
+        )
+    )
+)
+
+(def element AdvBT_BattleTimerText (_battleState:number, _userPrefsNum:gfx=null)
+    (scope
+        (var cameraComponent:gfx = "$datahub.getSingleComponent(CC.camera)")
+	    (var altVision:bool = "cameraComponent ? cameraComponent.altVision : false" (event "cameraComponent.evAltVisionChanged"))
+
+        (macro STAGE_SIZE)
+        (var defaultPos:dict = "{positionX: stageWidth - 176 - AdvBT_ELEMENT_SIZE.WIDTH, positionY: 0}") # stageWidth - MainHud offset - width of this element
+        (macro DRAGGABLE_GET_DROP_POSITION _elementName = "AdvBT_ELEMENT_NAME" _defaultPosition = "defaultPos")
+
+        (macro TT_GET_PREF_BOOL   _varName="'isPositionLocked'" 	_pref="AdvBT_PREFS.DISABLE_DRAGDROP")
+        (macro TT_GET_PREF_NUMBER _varName="'bgAlpha'"              _pref="AdvBT_PREFS.BACKGROUND.ALPHA")
+        (macro TT_GET_PREF_NUMBER _varName="'bgDisplayMode'"        _pref="AdvBT_PREFS.BACKGROUND.DISPLAY_MODE")
+        (var isBGVisible:bool = "bgDisplayMode == AdvBT_DISPLAY_MODES.ADAPTIVE ? altVision : bgDisplayMode")
+
+        (macro TT_GET_PREF_NUMBER _varName="'fontSize'"             _pref="AdvBT_PREFS.FONT_SIZE")
+        (macro TT_GET_PREF_NUMBER _varName="'warnTime'"             _pref="AdvBT_PREFS.WARN_TIME")
+        (var warnTimeSec:number = "warnTime * 60")
+
+
+        (var battleEntity:gfx = "$datahub.getSingleEntity(CC.battleTimer)")
+		(var battleTime:number = "battleEntity.battleTimer.battleTime" (event "battleEntity.battleTimer.evBattleTimeChanged"))
+		(var battleDuration:number = "battleEntity.battleInfo.duration * 60")
+		(var battleTimeLeft:number = "battleDuration - battleTime")
+		(var isBattleStarted:bool = "_battleState == SC.Common.CLIENT_BATTLE_STATE.STARTED")
+        # Mod
+        (var isWarning:bool = "(isBattleStarted && battleTimeLeft < warnTimeSec)")
+		(var btTextColor:number = "isWarning    ? SC.Ui_styles.SERVICE_COLORS.ORANGE
+                                                : SC.Ui_styles.SERVICE_COLORS.WHITE")
+        #
+		(var timerText:str = "countdownFormat(battleTimeLeft, 0, true)")
+    )
+
+    (style
+        (position = "absolute")
+        (bind left "dragPosX")
+        (bind top "dragPosY")
+    )
+
+    # Draggable
+    (controller $Instance renderer='ModDraggableElement'
+        (bind enabled "!isPositionLocked")
+        (args
+            _elementName="AdvBT_ELEMENT_NAME"
+            _defaultPosition = "defaultPos"
+        )
+    )
+
+    # BG
+    (mc contrast_panel
+        (class $FullsizeAbsolute)
+        (bind visible "isBGVisible")
+        (style
+            (hitTest = false)
+            (bind alpha "bgAlpha")
+        )
+    )
+
+    # Main
+    (block
+        (style
+            (width = "AdvBT_ELEMENT_SIZE.WIDTH")
+            (height = "AdvBT_ELEMENT_SIZE.HEIGHT")
+            (align = "middle|center")
+            (hitTest = false)
+        )
+        (tf
+            (class $AdvBT_Text)
+            (style
+                (bind textColor "btTextColor")
+                (bind fontSize "fontSize")
+            )
+            
+            (bind text "timerText")
+        )
+    )
+)

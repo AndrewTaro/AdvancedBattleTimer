@@ -12,10 +12,13 @@
     HEIGHT  : 30px,
 })
 
-(def element BattleTimer (_battleState:number) layout=true
-)
+(def constant AdvBT_PREBATTLE_ANIM_DURATION 0.5)
 
-(def css $AdvBT_Text()
+(def element BattleTimer (_battleState:number) layout=true)
+
+(def element PrebattleText() layout=true)
+
+(def css $AdvBT_BattleTimerText()
     (extends $Bold)
     (extends $FontSizeDefault)
 	(extends $FontColorDefault)
@@ -39,6 +42,32 @@
     )
 )
 
+(def css $AdvBT_PreBattleText()
+    (extends $Bold)
+	(extends $FontColorWhite)
+
+	(fontSize = 110)
+    (filters
+        (dropShadow
+            (distance = 10)
+            (angle = 0)
+            (color = 0)
+            (alpha = 0.4)
+            (blurX = 32)
+            (blurY = 32)
+            (strength = 1)
+            (quality = 2)
+        )
+    )
+
+    (textAlign = "center")
+
+	(marginLeft = -4px)
+	(marginRight = -4px)
+	(marginTop = -19px)
+	(marginBottom = -15px)
+)
+
 (def element AdvBT_BattleTimer () layout=true
     (scope
         (macro TT_GET_USERPREF)
@@ -48,6 +77,7 @@
 
 		(var battleState:number = "battleDataEntity.battleState.battleState" (event "battleDataEntity.battleState.evBattleStateChanged"))
         (var isBattleTimerVisible:bool = "!(isIn(gameModeId, SC.Battle.GAME_MODE.BATTLE_TIMER_HIDDEN)) && battleState == SC.Common.CLIENT_BATTLE_STATE.STARTED")
+        (var isPreBattleTimerVisible:bool = "battleState == SC.Common.CLIENT_BATTLE_STATE.COUNTDOWN")
 	)
 
     (style
@@ -60,6 +90,13 @@
         (bind enabled "isBattleTimerVisible")
         (args
             _battleState    = "battleState"
+            _userPrefsNum   = "_userPrefsNum"
+        )
+    )
+
+    (controller $Instance renderer='AdvBT_PreBattleTimerText'
+        (bind enabled "isPreBattleTimerVisible")
+        (args
             _userPrefsNum   = "_userPrefsNum"
         )
     )
@@ -131,7 +168,7 @@
             (hitTest = false)
         )
         (tf
-            (class $AdvBT_Text)
+            (class $AdvBT_BattleTimerText)
             (style
                 (bind textColor "btTextColor")
                 (bind fontSize "fontSize")
@@ -139,5 +176,123 @@
             
             (bind text "timerText")
         )
+    )
+)
+
+(def element AdvBT_PreBattleTimerText (_userPrefsNum:gfx=null) layout=true
+	(scope
+        (var timer:gfx = "$datahub.getSingleComponent(CC.timer)")
+
+		(var battleInfoEntity:gfx = "$datahub.getSingleEntity(CC.battleInfo)")
+		(var labelGameModeDescription:str = "battleInfoEntity.battleInfo.gameModeDescription")
+
+        # The precision of battleTimer.battleTime is fucking awful for some reason so we have to manually do this
+        (var countEndTime:number = "battleInfoEntity.battleTimer.battleTime + timer.currentTime - AdvBT_PREBATTLE_ANIM_DURATION" watch=false init=true)
+        (var countTimeLeft:number = "ceil(max(countEndTime - timer.currentTime, 0))" (event "timer.evFrequent"))
+		(var countTimeLeftText:str = "countdownFormat(countTimeLeft, 0, true)")
+
+        (var tensIndex:number = "countTimeLeftText.length - 2") # Guaranteed to be <=0 due to countdownFormat
+        (var onesIndex:number = "countTimeLeftText.length - 1") # Guaranteed to be <=0 due to countdownFormat
+        (var tensDigit:str = "countTimeLeftText[tensIndex]")
+        (var onesDigit:str = "countTimeLeftText[onesIndex]")
+	)
+
+	(style
+        (width = 100%)
+        (position = "absolute")
+        (top = "XXL")
+		(align = "center|middle")
+        (hitTest = false)
+	)
+	
+	(block
+		(tf
+			(class $TextDefaultBold19NM)
+			(bind text "labelGameModeDescription")
+		)
+	)
+	
+	(hblock
+		(style
+			(marginTop = "MS")
+		)
+
+        (block
+            (element AdvBT_AnimatedDigitText _value="tensDigit" _maxLifeTime=11 _isEnabled="tensDigit != '0'")
+        )
+        (block
+            (element AdvBT_AnimatedDigitText _value="onesDigit" _maxLifeTime=2 _isEnabled="!(tensDigit == '0' && onesDigit == '0')")
+        )
+	)
+)
+
+(def element AdvBT_AnimatedDigitText(_value:str, _maxLifeTime:number, _isEnabled:bool = true)
+    (scope
+        (event evAddedToStage)
+        (event evHidePrevValue)
+        (event evShowNewValue)
+
+        (var isVisible:bool = true)
+        (var prevValue:str = "_value" watch=false)
+        (bind prevValue "_value" init=false watch=false (event "evShowNewValue"))
+    )
+
+    (dispatch evAddedToStage args="{}" on='addedToStage')
+
+    (dispatch evHidePrevValue       args="{targetValue: prevValue}" init=false dir="EventDirection.DOWN" (bind trigger "_value"))
+    (dispatch evShowNewValue        args="{}" delay="AdvBT_PREBATTLE_ANIM_DURATION" (bind enabled "_isEnabled") (event "evHidePrevValue")(event "evAddedToStage"))
+
+    (controller $FxInstance renderer='AdvBT_DigitText' lifetime="_maxLifeTime"
+        (args
+            _value="_value"
+        )
+        (bindcall create (event "evShowNewValue"))
+    )
+)
+
+(def element AdvBT_DigitText(_value:str)
+    (scope
+        (event evAddedToStage)
+        (event evHidePrevValue)
+        (event evHide)
+        (event evHideCompleted)
+        (var value:str = "_value" watch=false)
+        (var isDisappearing:bool = "$event ? $event.targetValue == value : false" watch=false (event "evHidePrevValue")) # prevent the newly added element from disappearing
+    )
+
+    (dispatch evHide args="{}" init=false watch=false (bind enabled "isDisappearing") (event "evHidePrevValue"))
+    (dispatch evHideCompleted args="{}" delay="AdvBT_PREBATTLE_ANIM_DURATION" init=false watch=false (event "evHide")) # need to hide this element in order to align another digit properly
+    (dispatch evAddedToStage on='addedToStage')
+
+    (bind visible "false" watch=false init=false (event "evHideCompleted"))
+
+    (style
+        (height = 0px)
+        (width = 50px)
+        #(align = "middle|center")
+        (alpha = 0)
+        (visualOffsetY = -50px)
+    )
+
+    (controller $Animation
+		(bindcall play 
+            from     = "{visualOffsetY: -50, alpha: 0}"
+            to       = "{visualOffsetY:   0, alpha: 1}"
+            easing   ="Easing.expo_out"
+            duration = "AdvBT_PREBATTLE_ANIM_DURATION"
+			(event "evAddedToStage")
+		)
+        (bindcall play 
+            to       = "{visualOffsetY:  50, alpha: 0}"
+            duration = "AdvBT_PREBATTLE_ANIM_DURATION"
+            easing   = "Easing.expo_in"
+            action   = "append"
+			(event "evHide")
+		)
+	)
+
+    (tf
+        (class $AdvBT_PreBattleText)
+        (bind text "value")
     )
 )

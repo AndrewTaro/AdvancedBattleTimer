@@ -13,12 +13,13 @@
 })
 
 (def constant AdvBT_PREBATTLE_ANIM_DURATION 0.5)
+(def constant AdvBT_PREBATTLE_APPEAR_DELAY 0.5)
 
 (def element BattleTimer (_battleState:number) layout=true)
 
 (def element PrebattleText() layout=true)
 
-(def css $AdvBT_BattleTimerText()
+(def css $AdvBT_BattleText()
     (extends $Bold)
     (extends $FontSizeDefault)
 	(extends $FontColorDefault)
@@ -68,6 +69,21 @@
 	(marginBottom = -15px)
 )
 
+(def macro AdvBT_APPEAR_ANIMATION(_delayIndex:expression)
+    (style
+        (alpha = 0)
+    )
+    (controller $Animation
+        (bindcall play 
+            from     = "{visualOffsetY: -10, alpha: 0}"
+            to       = "{visualOffsetY:   0, alpha: 1}"
+            delay    = "AdvBT_PREBATTLE_APPEAR_DELAY * _delayIndex"
+            duration = "0.3"
+            (event "evAddedToStage")
+        )
+    )
+)
+
 (def element AdvBT_BattleTimer () layout=true
     (scope
         (macro TT_GET_USERPREF)
@@ -77,7 +93,9 @@
 
 		(var battleState:number = "battleDataEntity.battleState.battleState" (event "battleDataEntity.battleState.evBattleStateChanged"))
         (var isBattleTimerVisible:bool = "!(isIn(gameModeId, SC.Battle.GAME_MODE.BATTLE_TIMER_HIDDEN)) && battleState == SC.Common.CLIENT_BATTLE_STATE.STARTED")
-        (var isPreBattleTimerVisible:bool = "battleState == SC.Common.CLIENT_BATTLE_STATE.COUNTDOWN")
+        (var isPreBattleTimerVisible:bool = "battleState == SC.Common.CLIENT_BATTLE_STATE.COUNTDOWN" watch=false)
+        (event evPreBattleAnimEnded)
+        (bind isPreBattleTimerVisible "false" init=false (event "evPreBattleAnimEnded"))
 	)
 
     (style
@@ -168,7 +186,7 @@
             (hitTest = false)
         )
         (tf
-            (class $AdvBT_BattleTimerText)
+            (class $AdvBT_BattleText)
             (style
                 (bind textColor "btTextColor")
                 (bind fontSize "fontSize")
@@ -181,14 +199,20 @@
 
 (def element AdvBT_PreBattleTimerText (_userPrefsNum:gfx=null) layout=true
 	(scope
+        (event evAddedToStage)
+        (event evPreBattleAnimEnded)
+        (event evPreBattleEnded)
+
         (var timer:gfx = "$datahub.getSingleComponent(CC.timer)")
 
 		(var battleInfoEntity:gfx = "$datahub.getSingleEntity(CC.battleInfo)")
-		(var labelGameModeDescription:str = "battleInfoEntity.battleInfo.gameModeDescription")
+        (var gameModeTitle:str = "battleInfoEntity.battleInfo.gameMode")
+		(var gameModeDescription:str = "battleInfoEntity.battleInfo.gameModeDescription")
+        (var battleType:str = "battleInfoEntity.battleInfo.battleType")
 
         # The precision of battleTimer.battleTime is fucking awful for some reason so we have to manually do this
         (var countEndTime:number = "battleInfoEntity.battleTimer.battleTime + timer.currentTime - AdvBT_PREBATTLE_ANIM_DURATION" watch=false init=true)
-        (var countTimeLeft:number = "ceil(max(countEndTime - timer.currentTime, 0))" (event "timer.evFrequent"))
+        (var countTimeLeft:number = "ceil(max(countEndTime - timer.currentTime, 0))" watch=false (event "timer.evFrequent"))
 		(var countTimeLeftText:str = "countdownFormat(countTimeLeft, 0, true)")
 
         (var tensIndex:number = "countTimeLeftText.length - 2") # Guaranteed to be <=0 due to countdownFormat
@@ -197,6 +221,9 @@
         (var onesDigit:str = "countTimeLeftText[onesIndex]")
 	)
 
+    (dispatch evAddedToStage args="{}" delay=2 on='addedToStage') # deffered init for better animation
+    (dispatch evPreBattleEnded args="{}" init=false (bind enabled "countTimeLeft <= 0") (bind trigger "countTimeLeft"))
+
 	(style
         (width = 100%)
         (position = "absolute")
@@ -204,25 +231,74 @@
 		(align = "center|middle")
         (hitTest = false)
 	)
-	
-	(block
+
+    # Disappear
+    (controller $Animation
+        (bindcall play 
+            from     = "{visualOffsetY:   0, alpha: 1}"
+            to       = "{visualOffsetY: -10, alpha: 0}"
+            delay    = "AdvBT_PREBATTLE_APPEAR_DELAY"
+            duration = "AdvBT_PREBATTLE_ANIM_DURATION"
+            (event "evPreBattleEnded")
+        )
+        (dispatch evPreBattleAnimEnded dir="EventDirection.UP" args="{}" init=false on=evAnimEnded)
+    )
+
+    (block
+        (style
+            (align = "middle|center")
+        )
+        (macro AdvBT_APPEAR_ANIMATION _delayIndex="0")
+
+        (blendMode = layer)
+        (block
+            (class $MiddleAlignedAbsolutely)
+            (style
+                (backgroundImage = "'url:../ttaro_battle_timer/gradient_mask.png'")
+                (backgroundSize = "autosize")
+                (top = -110)
+            )
+            (blendMode = alpha)
+        )
+        (block
+            (class $MiddleAlignedAbsolutely)
+            (style
+                (backgroundSize = "autosize")
+                (alpha = 0.5)
+                (top = "MS")
+                (bind backgroundImage "'url:../service_kit/battle_types/' + battleType + '_big.png'")
+            )
+        )
+        
+        (hblock
+            (style
+                (marginTop = "MS")
+                (height = 90px)
+            )
+
+            (block
+                (element AdvBT_AnimatedDigitText _value="tensDigit" _maxLifeTime=11 _isEnabled="tensDigit != '0'")
+            )
+            (block
+                (element AdvBT_AnimatedDigitText _value="onesDigit" _maxLifeTime=2 _isEnabled="!(tensDigit == '0' && onesDigit == '0')")
+            )
+        )
+    )
+    (block
+        (style
+            (align = "middle|center")
+            (vgap = 15px)
+        )
+        (tf
+            (class $TextDefaultBold36NM)
+            (bind text "'IDS_' + toUpper(gameModeTitle) + '_TITLE'")
+            (macro AdvBT_APPEAR_ANIMATION _delayIndex="1")
+        )
 		(tf
 			(class $TextDefaultBold19NM)
-			(bind text "labelGameModeDescription")
+			(bind text "gameModeDescription")
+            (macro AdvBT_APPEAR_ANIMATION _delayIndex="2")
 		)
-	)
-	
-	(hblock
-		(style
-			(marginTop = "MS")
-		)
-
-        (block
-            (element AdvBT_AnimatedDigitText _value="tensDigit" _maxLifeTime=11 _isEnabled="tensDigit != '0'")
-        )
-        (block
-            (element AdvBT_AnimatedDigitText _value="onesDigit" _maxLifeTime=2 _isEnabled="!(tensDigit == '0' && onesDigit == '0')")
-        )
 	)
 )
 
@@ -269,7 +345,6 @@
     (style
         (height = 0px)
         (width = 50px)
-        #(align = "middle|center")
         (alpha = 0)
         (visualOffsetY = -50px)
     )

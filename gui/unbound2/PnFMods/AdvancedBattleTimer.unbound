@@ -69,7 +69,7 @@
 	(marginBottom = -15px)
 )
 
-(def macro AdvBT_APPEAR_ANIMATION(_delayIndex:expression)
+(def macro AdvBT_APPEAR_ANIMATION(_delayIndex:expression="0")
     (style
         (alpha = 0)
     )
@@ -150,6 +150,8 @@
                                                 : SC.Ui_styles.SERVICE_COLORS.WHITE")
         #
 		(var timerText:str = "countdownFormat(battleTimeLeft, 0, true)")
+
+        (event evAddedToStage)
     )
 
     (style
@@ -157,6 +159,10 @@
         (bind left "dragPosX")
         (bind top "dragPosY")
     )
+
+    (dispatch evAddedToStage args="{}" on=addedToStage)
+
+    (macro AdvBT_APPEAR_ANIMATION)
 
     # Draggable
     (controller $Instance renderer='ModDraggableElement'

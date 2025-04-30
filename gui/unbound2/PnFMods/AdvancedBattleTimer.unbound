@@ -50,12 +50,12 @@
 	(fontSize = 110)
     (filters
         (dropShadow
-            (distance = 10)
+            (distance = 0)
             (angle = 0)
             (color = 0)
-            (alpha = 0.4)
-            (blurX = 32)
-            (blurY = 32)
+            (alpha = 1)
+            (blurX = 16)
+            (blurY = 16)
             (strength = 1)
             (quality = 2)
         )

@@ -1,5 +1,5 @@
 # Advanced Battle Timer
-This mod lets you customize the battle timer, improving the countdown's visual effects before the match starts.
+This mod lets you customize the battle timer and also improves the countdown's visual effects before the match starts.
 ![image](https://github.com/user-attachments/assets/f7c1a682-1fa8-4b7c-b871-1e72c406ee39)
 ![image](https://github.com/user-attachments/assets/77097e98-ecc0-4d7a-ab16-4b1cfe963c60)
 

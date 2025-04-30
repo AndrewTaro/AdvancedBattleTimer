@@ -95,8 +95,13 @@
         (var isBattleTimerVisible:bool = "!(isIn(gameModeId, SC.Battle.GAME_MODE.BATTLE_TIMER_HIDDEN)) && battleState == SC.Common.CLIENT_BATTLE_STATE.STARTED")
         (var isPreBattleTimerVisible:bool = "battleState == SC.Common.CLIENT_BATTLE_STATE.COUNTDOWN" watch=false)
         (event evPreBattleAnimEnded)
-        (bind isPreBattleTimerVisible "false" init=false (event "evPreBattleAnimEnded"))
+        (event evRemovePreBattleTimer)
+        (bind isPreBattleTimerVisible "false" init=false (event "evRemovePreBattleTimer"))
 	)
+
+    (dispatch evRemovePreBattleTimer args="{}" delay="0.01" init=false (event "evPreBattleAnimEnded"))
+    # Without this delay the game will crash when reloading the ub2
+    # its an edge case that never happens in the normal gameplay but it is cringe
 
     (style
         (position = "absolute")

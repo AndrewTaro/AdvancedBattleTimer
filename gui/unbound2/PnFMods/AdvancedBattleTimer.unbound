@@ -109,7 +109,6 @@
         (bind width "stageWidth")
         (bind height "stageHeight")
     )
-
     (bind visible "!isSpectatorTrainingMode")
 
     (controller $Instance renderer='AdvBT_BattleTimerText'

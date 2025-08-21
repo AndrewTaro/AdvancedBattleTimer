@@ -88,7 +88,6 @@
     (scope
         (macro TT_GET_USERPREF)
         (macro STAGE_SIZE)
-        (macro IS_SPECTATOR_MODE)
         (var battleDataEntity:gfx = "$datahub.getSingleEntity(CC.battleData)")
 		(var gameModeId:number = "battleDataEntity.battleInfo.gameModeId")
 
@@ -109,7 +108,6 @@
         (bind width "stageWidth")
         (bind height "stageHeight")
     )
-    (bind visible "!isSpectatorTrainingMode")
 
     (controller $Instance renderer='AdvBT_BattleTimerText'
         (bind enabled "isBattleTimerVisible")

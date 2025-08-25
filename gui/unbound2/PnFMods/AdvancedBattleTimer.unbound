@@ -163,6 +163,7 @@
         (position = "absolute")
         (bind left "dragPosX")
         (bind top "dragPosY")
+        (pivotX = 50%)
     )
 
     (dispatch evAddedToStage args="{}" on=addedToStage)

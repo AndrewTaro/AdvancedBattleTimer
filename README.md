@@ -22,4 +22,3 @@ My project is a complete rewrite from scratch, with bug fixes and more options.
 # Requirements
 You must install the following in order to use the mod.
 - [TTaro Mod Config](../../../TTaroModConfig)
-- [DraggableUnbound2](../../../DraggableUnbound2)

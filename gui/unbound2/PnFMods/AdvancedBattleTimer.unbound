@@ -1,12 +1,6 @@
-(def constant TT_BATTLETIMER_INSTALLED "true")
-(def constant AdvBT_ELEMENT_NAME 'advBattleTimer')
 
-(def constant AdvBT_DISPLAY_MODES {
-	DISABLE : 0,
-	ENABLE  : 1,
-	ADAPTIVE: 2,
-})
-
+# The off/on/alt-vision triple is TT_CONST.DISPLAY_MODE now -- the one shared enum, per
+# TT_CONST_SHARING_AUDIT.md.  Everything else stays mod-local.
 (def constant AdvBT_ELEMENT_SIZE {
 	WIDTH   : 60px,
     HEIGHT  : 30px,
@@ -86,7 +80,6 @@
 
 (def element AdvBT_BattleTimer () layout=true
     (scope
-        (macro TT_GET_USERPREF)
         (macro STAGE_SIZE)
         (var battleDataEntity:gfx = "$datahub.getSingleEntity(CC.battleData)")
 		(var gameModeId:number = "battleDataEntity.battleInfo.gameModeId")
@@ -113,34 +106,34 @@
         (bind enabled "isBattleTimerVisible")
         (args
             _battleState    = "battleState"
-            _userPrefsNum   = "_userPrefsNum"
         )
     )
 
     (controller $Instance renderer='AdvBT_PreBattleTimerText'
         (bind enabled "isPreBattleTimerVisible")
-        (args
-            _userPrefsNum   = "_userPrefsNum"
-        )
     )
 )
 
-(def element AdvBT_BattleTimerText (_battleState:number, _userPrefsNum:gfx=null)
+(def element AdvBT_BattleTimerText (_battleState:number)
     (scope
         (var cameraComponent:gfx = "$datahub.getSingleComponent(CC.camera)")
 	    (var altVision:bool = "cameraComponent ? cameraComponent.altVision : false" (event "cameraComponent.evAltVisionChanged"))
 
-        (macro STAGE_SIZE)
-        (var defaultPos:dict = "{positionX: stageWidth - 176 - AdvBT_ELEMENT_SIZE.WIDTH, positionY: 0}") # stageWidth - MainHud offset - width of this element
-        (macro DRAGGABLE_GET_DROP_POSITION _elementName = "AdvBT_ELEMENT_NAME" _defaultPosition = "defaultPos")
+        # Python owns the position value, its resKey bucket AND the first-placement default.
+        (macro TT_DRAGGABLE_POSITION _fullKey="'advBattleTimer.position'")
 
-        (macro TT_GET_PREF_BOOL   _varName="'isPositionLocked'" 	_pref="AdvBT_PREFS.DISABLE_DRAGDROP")
-        (macro TT_GET_PREF_NUMBER _varName="'bgAlpha'"              _pref="AdvBT_PREFS.BACKGROUND.ALPHA")
-        (macro TT_GET_PREF_NUMBER _varName="'bgDisplayMode'"        _pref="AdvBT_PREFS.BACKGROUND.DISPLAY_MODE")
-        (var isBGVisible:bool = "bgDisplayMode == AdvBT_DISPLAY_MODES.ADAPTIVE ? altVision : bgDisplayMode")
+        (macro TT_GET_PREF _varName="'dragLockPref'" _key="'advBattleTimer.disableDragdrop'")
+        (var isPositionLocked:bool = "null != dragLockPref && null != dragLockPref.value ? dragLockPref.value : false")
+        (macro TT_GET_PREF _varName="'bgAlphaPref'" _key="'advBattleTimer.background.alpha'")
+        (var bgAlpha:number = "null != bgAlphaPref && null != bgAlphaPref.value ? bgAlphaPref.value : 0.4")
+        (macro TT_GET_PREF _varName="'bgModePref'" _key="'advBattleTimer.background.displayMode'")
+        (var bgDisplayMode:number = "null != bgModePref && null != bgModePref.value ? bgModePref.value : TT_CONST.DISPLAY_MODE.DISABLED")
+        (var isBGVisible:bool = "bgDisplayMode == TT_CONST.DISPLAY_MODE.ADAPTIVE ? altVision : bgDisplayMode")
 
-        (macro TT_GET_PREF_NUMBER _varName="'fontSize'"             _pref="AdvBT_PREFS.FONT_SIZE")
-        (macro TT_GET_PREF_NUMBER _varName="'warnTime'"             _pref="AdvBT_PREFS.WARN_TIME")
+        (macro TT_GET_PREF _varName="'fontSizePref'" _key="'advBattleTimer.fontSize'")
+        (var fontSize:number = "null != fontSizePref && null != fontSizePref.value ? fontSizePref.value : 17")
+        (macro TT_GET_PREF _varName="'warnTimePref'" _key="'advBattleTimer.warnTime'")
+        (var warnTime:number = "null != warnTimePref && null != warnTimePref.value ? warnTimePref.value : 5")
         (var warnTimeSec:number = "warnTime * 60")
 
 
@@ -161,22 +154,29 @@
 
     (style
         (position = "absolute")
-        (bind left "dragPosX")
-        (bind top "dragPosY")
-        (pivotX = 50%)
+        (bind left "dragX")
+        (bind top "dragY")
+        # RIGHT-edge transform origin, matching the schema's right anchor.  The legacy default was
+        # `stageWidth - 176 - 60` against a 50% pivot, i.e. a right edge at stageWidth - 206, which is
+        # exactly the schema offset -- so both edges land where they always did.  The appear animation
+        # only moves visualOffsetY/alpha, so the pivot change does not touch it.
+        (pivotX = 100%)
     )
 
     (dispatch evAddedToStage args="{}" on=addedToStage)
 
     (macro AdvBT_APPEAR_ANIMATION)
 
-    # Draggable
-    (controller $Instance renderer='ModDraggableElement'
-        (bind enabled "!isPositionLocked")
-        (args
-            _elementName="AdvBT_ELEMENT_NAME"
-            _defaultPosition = "defaultPos"
+    # Draggable -- full-size surface coextensive with the positioned element, declared before the
+    # background and content so the injected signifier stays behind them.
+    (block
+        (class $FullsizeAbsolute)
+        # hitTest is a STYLE property when BOUND -- directly under a (block ...) it throws at build time.
+        (style
+            (backgroundColor = 0x00FFFFFF)
+            (bind hitTest "!isPositionLocked")
         )
+        (macro TT_DRAGGABLE _fullKey="'advBattleTimer.position'" _isDragEnabled="!isPositionLocked")
     )
 
     # BG
@@ -209,7 +209,7 @@
     )
 )
 
-(def element AdvBT_PreBattleTimerText (_userPrefsNum:gfx=null) layout=true
+(def element AdvBT_PreBattleTimerText () layout=true
 	(scope
         (event evAddedToStage)
         (event evPreBattleAnimEnded)

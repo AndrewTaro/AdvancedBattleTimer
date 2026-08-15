@@ -156,11 +156,14 @@
         (position = "absolute")
         (bind left "dragX")
         (bind top "dragY")
-        # RIGHT-edge transform origin, matching the schema's right anchor.  The legacy default was
-        # `stageWidth - 176 - 60` against a 50% pivot, i.e. a right edge at stageWidth - 206, which is
-        # exactly the schema offset -- so both edges land where they always did.  The appear animation
-        # only moves visualOffsetY/alpha, so the pivot change does not touch it.
-        (pivotX = 100%)
+        # STAYS 50% -- the legacy pivot.  A stored position is an ORIGIN, so its meaning depends on the
+        # pivot: the folded legacy advBattleTimer_positionX is a 50%-pivot origin (the box CENTRE), and
+        # reading it at 100% moves every migrated timer left by WIDTH/2 = 30px.
+        # The schema's right anchor does NOT need a matching pivot -- Python resolves defaults
+        # size-aware and the pivot cancels (boxLeft = P - f*size, via the reported pox), so the default
+        # lands identically either way.  Matching only avoids a one-frame offset before the first
+        # reportGeometry, and only for a user with no stored position.
+        (pivotX = 50%)
     )
 
     (dispatch evAddedToStage args="{}" on=addedToStage)

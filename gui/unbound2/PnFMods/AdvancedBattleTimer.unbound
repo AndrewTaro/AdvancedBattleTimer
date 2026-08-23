@@ -122,7 +122,7 @@
         # Python owns the position value, its resKey bucket AND the first-placement default.
         (macro TT_DRAGGABLE_POSITION _fullKey="'advBattleTimer.position'")
 
-        (macro TT_GET_PREF _varName="'dragLockPref'" _key="'advBattleTimer.disableDragdrop'")
+        (macro TT_GET_PREF _varName="'dragLockPref'" _key="'advBattleTimer.disableDragDrop'")
         (var isPositionLocked:bool = "null != dragLockPref && null != dragLockPref.value ? dragLockPref.value : false")
         (macro TT_GET_PREF _varName="'bgAlphaPref'" _key="'advBattleTimer.background.alpha'")
         (var bgAlpha:number = "null != bgAlphaPref && null != bgAlphaPref.value ? bgAlphaPref.value : 0.4")
@@ -130,7 +130,7 @@
         (var bgDisplayMode:number = "null != bgModePref && null != bgModePref.value ? bgModePref.value : TT_CONST.DISPLAY_MODE.DISABLED")
         (var isBGVisible:bool = "bgDisplayMode == TT_CONST.DISPLAY_MODE.ADAPTIVE ? altVision : bgDisplayMode")
 
-        (macro TT_GET_PREF _varName="'fontSizePref'" _key="'advBattleTimer.fontSize'")
+        (macro TT_GET_PREF _varName="'fontSizePref'" _key="'advBattleTimer.font.size'")
         (var fontSize:number = "null != fontSizePref && null != fontSizePref.value ? fontSizePref.value : 17")
         (macro TT_GET_PREF _varName="'warnTimePref'" _key="'advBattleTimer.warnTime'")
         (var warnTime:number = "null != warnTimePref && null != warnTimePref.value ? warnTimePref.value : 5")

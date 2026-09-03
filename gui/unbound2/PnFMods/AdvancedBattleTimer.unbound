@@ -120,19 +120,19 @@
 	    (var altVision:bool = "cameraComponent ? cameraComponent.altVision : false" (event "cameraComponent.evAltVisionChanged"))
 
         # Python owns the position value, its resKey bucket AND the first-placement default.
-        (macro TT_DRAGGABLE_POSITION _fullKey="'advBattleTimer.position'")
+        (macro TT_DRAGGABLE_POSITION _fullKey="'ttaro.advBattleTimer.position'")
 
-        (macro TT_GET_PREF _varName="'dragLockPref'" _key="'advBattleTimer.disableDragDrop'")
+        (macro TT_GET_PREF _varName="'dragLockPref'" _key="'ttaro.advBattleTimer.disableDragDrop'")
         (var isPositionLocked:bool = "null != dragLockPref && null != dragLockPref.value ? dragLockPref.value : false")
-        (macro TT_GET_PREF _varName="'bgAlphaPref'" _key="'advBattleTimer.background.alpha'")
+        (macro TT_GET_PREF _varName="'bgAlphaPref'" _key="'ttaro.advBattleTimer.background.alpha'")
         (var bgAlpha:number = "null != bgAlphaPref && null != bgAlphaPref.value ? bgAlphaPref.value : 0.4")
-        (macro TT_GET_PREF _varName="'bgModePref'" _key="'advBattleTimer.background.displayMode'")
+        (macro TT_GET_PREF _varName="'bgModePref'" _key="'ttaro.advBattleTimer.background.displayMode'")
         (var bgDisplayMode:number = "null != bgModePref && null != bgModePref.value ? bgModePref.value : TT_CONST.DISPLAY_MODE.DISABLED")
         (var isBGVisible:bool = "bgDisplayMode == TT_CONST.DISPLAY_MODE.ADAPTIVE ? altVision : bgDisplayMode")
 
-        (macro TT_GET_PREF _varName="'fontSizePref'" _key="'advBattleTimer.font.size'")
+        (macro TT_GET_PREF _varName="'fontSizePref'" _key="'ttaro.advBattleTimer.font.size'")
         (var fontSize:number = "null != fontSizePref && null != fontSizePref.value ? fontSizePref.value : 17")
-        (macro TT_GET_PREF _varName="'warnTimePref'" _key="'advBattleTimer.warnTime'")
+        (macro TT_GET_PREF _varName="'warnTimePref'" _key="'ttaro.advBattleTimer.warnTime'")
         (var warnTime:number = "null != warnTimePref && null != warnTimePref.value ? warnTimePref.value : 5")
         (var warnTimeSec:number = "warnTime * 60")
 
@@ -179,7 +179,7 @@
             (backgroundColor = 0x00FFFFFF)
             (bind hitTest "!isPositionLocked")
         )
-        (macro TT_DRAGGABLE _fullKey="'advBattleTimer.position'" _isDragEnabled="!isPositionLocked")
+        (macro TT_DRAGGABLE _fullKey="'ttaro.advBattleTimer.position'" _isDragEnabled="!isPositionLocked")
     )
 
     # BG

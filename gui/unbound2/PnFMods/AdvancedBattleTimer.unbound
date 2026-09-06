@@ -92,7 +92,7 @@
         (bind isPreBattleTimerVisible "false" init=false (event "evRemovePreBattleTimer"))
 	)
 
-    (dispatch evRemovePreBattleTimer args="{}" delay="0.01" init=false (event "evPreBattleAnimEnded"))
+    (dispatch evRemovePreBattleTimer args="{}" delay="0.01" (event "evPreBattleAnimEnded"))
     # Without this delay the game will crash when reloading the ub2
     # its an edge case that never happens in the normal gameplay but it is cringe
 
@@ -237,7 +237,7 @@
 	)
 
     (dispatch evAddedToStage args="{}" delay=2 on='addedToStage') # deffered init for better animation
-    (dispatch evPreBattleEnded args="{}" init=false (bind enabled "countTimeLeft <= 0") (bind trigger "countTimeLeft"))
+    (dispatch evPreBattleEnded args="{}" (bind enabled "countTimeLeft <= 0") (bind trigger "countTimeLeft"))
 
 	(style
         (width = 100%)
@@ -256,7 +256,7 @@
             duration = "AdvBT_PREBATTLE_ANIM_DURATION"
             (event "evPreBattleEnded")
         )
-        (dispatch evPreBattleAnimEnded dir="EventDirection.UP" args="{}" init=false on=evAnimEnded)
+        (dispatch evPreBattleAnimEnded dir="EventDirection.UP" args="{}" on=evAnimEnded)
     )
 
     (block
@@ -330,7 +330,7 @@
 
     (dispatch evAddedToStage args="{}" on='addedToStage')
 
-    (dispatch evHidePrevValue       args="{targetValue: prevValue}" init=false dir="EventDirection.DOWN" (bind trigger "_value"))
+    (dispatch evHidePrevValue       args="{targetValue: prevValue}" dir="EventDirection.DOWN" (bind trigger "_value"))
     (dispatch evShowNewValue        args="{}" delay="AdvBT_PREBATTLE_ANIM_DURATION" (bind enabled "_isEnabled") (event "evHidePrevValue")(event "evAddedToStage"))
 
     (controller $FxInstance renderer='AdvBT_DigitText' lifetime="_maxLifeTime"
@@ -351,8 +351,8 @@
         (var isDisappearing:bool = "$event ? $event.targetValue == value : false" watch=false (event "evHidePrevValue")) # prevent the newly added element from disappearing
     )
 
-    (dispatch evHide args="{}" init=false watch=false (bind enabled "isDisappearing") (event "evHidePrevValue"))
-    (dispatch evHideCompleted args="{}" delay="AdvBT_PREBATTLE_ANIM_DURATION" init=false watch=false (event "evHide")) # need to hide this element in order to align another digit properly
+    (dispatch evHide args="{}" (bind enabled "isDisappearing") (event "evHidePrevValue"))
+    (dispatch evHideCompleted args="{}" delay="AdvBT_PREBATTLE_ANIM_DURATION" (event "evHide")) # need to hide this element in order to align another digit properly
     (dispatch evAddedToStage on='addedToStage')
 
     (bind visible "false" watch=false init=false (event "evHideCompleted"))

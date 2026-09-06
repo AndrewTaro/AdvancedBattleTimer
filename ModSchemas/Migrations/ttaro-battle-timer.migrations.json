@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 4,
+  "opVocabularyVersion": 1,
+  "slug": "battle-timer",
+  "migrations": [
+    {
+      "version": 1,
+      "description": "flat keys → dotted ancestry keys; slider step index → value",
+      "ops": [
+        {
+          "op": "rename",
+          "from": "advBattleTimerBackgroundDisplayMode",
+          "to": "advBattleTimer.background.displayMode"
+        },
+        {
+          "op": "rename",
+          "from": "advBattleTimerBackgroundOpacity",
+          "to": "advBattleTimer.background.alpha"
+        },
+        {
+          "op": "rename",
+          "from": "advBattleTimerDisableDragDrop",
+          "to": "advBattleTimer.disableDragDrop"
+        },
+        {
+          "op": "rename",
+          "from": "advBattleTimerFontSize",
+          "to": "advBattleTimer.font.size"
+        },
+        {
+          "op": "rename",
+          "from": "advBattleTimerLeftTimeThreshold",
+          "to": "advBattleTimer.warnTime"
+        },
+        {
+          "op": "transform",
+          "from": "advBattleTimer.background.alpha",
+          "to": "advBattleTimer.background.alpha",
+          "transform": "stepIndex",
+          "args": {
+            "min": 0.1,
+            "step": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "advBattleTimer.font.size",
+          "to": "advBattleTimer.font.size",
+          "transform": "stepIndex",
+          "args": {
+            "min": 13,
+            "step": 1
+          }
+        }
+      ]
+    }
+  ],
+  "legacyPositions": [
+    {
+      "key": "advBattleTimer.position",
+      "element": "advBattleTimer"
+    }
+  ]
+}

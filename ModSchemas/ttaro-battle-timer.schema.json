@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 4,
+  "id": "cmtkswux1000jv014zb48kymh",
+  "author": "ttaro",
+  "modName": "Battle Timer",
+  "slug": "battle-timer",
+  "order": 19,
+  "tree": [
+    {
+      "kind": "group",
+      "key": "cmtktamd600d3v0d4gahvty3o",
+      "label": "IDS_TT_TITLE_GENERAL",
+      "collapse": "expanded",
+      "children": [
+        {
+          "kind": "setting",
+          "control": "toggle",
+          "key": "advBattleTimer.disableDragDrop",
+          "label": "IDS_TT_DISABLE_DRAG_DROP",
+          "hint": {
+            "text": "IDS_TT_HINT_DISABLE_DRAG_DROP"
+          },
+          "default": false
+        },
+        {
+          "kind": "group",
+          "key": "cmt4us0gr0010v0rwrlec4cz4",
+          "aggregate": "inline",
+          "children": [
+            {
+              "kind": "setting",
+              "control": "slider",
+              "key": "advBattleTimer.font.size",
+              "label": "IDS_TT_FONT_SIZE",
+              "default": 17,
+              "min": 13,
+              "max": 23,
+              "step": 1,
+              "decimals": 0
+            }
+          ]
+        },
+        {
+          "kind": "setting",
+          "control": "slider",
+          "key": "advBattleTimer.warnTime",
+          "label": "IDS_TT_WARN_REMAINING_TIME",
+          "hint": {
+            "text": "IDS_TT_HINT_WARN_REMAINING_TIME"
+          },
+          "default": 5,
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "decimals": 0
+        },
+        {
+          "kind": "setting",
+          "control": "position",
+          "key": "advBattleTimer.position",
+          "label": "IDS_TT_DRAGDROP_RESET",
+          "hint": {
+            "text": "IDS_TT_HINT_DRAGDROP_RESET"
+          },
+          "defaultPosition": {
+            "x": {
+              "anchor": "right",
+              "offset": 206
+            },
+            "y": {
+              "anchor": "top",
+              "offset": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "key": "cmtktamdu00dov0d4raga2m0d",
+      "label": "IDS_TT_TITLE_BACKGROUND",
+      "collapse": "expanded",
+      "children": [
+        {
+          "kind": "setting",
+          "control": "dropdown",
+          "key": "advBattleTimer.background.displayMode",
+          "label": "IDS_TT_DISPLAY_MODE",
+          "hint": {
+            "text": "IDS_TT_HINT_DISPLAY_MODE"
+          },
+          "default": 0,
+          "options": [
+            {
+              "value": 0,
+              "phrase": "IDS_TURN_OFF"
+            },
+            {
+              "value": 1,
+              "phrase": "IDS_TURN_ON"
+            },
+            {
+              "value": 2,
+              "phrase": "IDS_ALT_VISION_MODE_1",
+              "icon": "CMD_ICONS"
+            }
+          ],
+          "optionStyle": "KEY"
+        },
+        {
+          "kind": "setting",
+          "control": "slider",
+          "key": "advBattleTimer.background.alpha",
+          "label": "IDS_TT_OPACITY",
+          "default": 0.4,
+          "min": 0.1,
+          "max": 1,
+          "step": 0.1,
+          "enabledWhen": {
+            "kind": "group",
+            "join": "all",
+            "conditions": [
+              {
+                "kind": "compare",
+                "key": "advBattleTimer.background.displayMode",
+                "op": "in",
+                "values": [
+                  1,
+                  2
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

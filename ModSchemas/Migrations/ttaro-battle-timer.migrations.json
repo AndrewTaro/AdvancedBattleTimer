@@ -1,11 +1,11 @@
 {
   "schemaVersion": 4,
-  "opVocabularyVersion": 1,
+  "opVocabularyVersion": 3,
   "slug": "battle-timer",
   "migrations": [
     {
       "version": 1,
-      "description": "flat keys → dotted ancestry keys; slider step index → value",
+      "description": "flat keys → dotted ancestry keys; legacy values decoded and folded onto the derived keys",
       "ops": [
         {
           "op": "rename",
@@ -14,18 +14,8 @@
         },
         {
           "op": "rename",
-          "from": "advBattleTimerBackgroundOpacity",
-          "to": "advBattleTimer.background.alpha"
-        },
-        {
-          "op": "rename",
           "from": "advBattleTimerDisableDragDrop",
           "to": "advBattleTimer.disableDragDrop"
-        },
-        {
-          "op": "rename",
-          "from": "advBattleTimerFontSize",
-          "to": "advBattleTimer.font.size"
         },
         {
           "op": "rename",
@@ -34,22 +24,52 @@
         },
         {
           "op": "transform",
-          "from": "advBattleTimer.background.alpha",
+          "transform": "compose",
           "to": "advBattleTimer.background.alpha",
-          "transform": "stepIndex",
-          "args": {
-            "min": 0.1,
-            "step": 0.1
+          "sources": [
+            {
+              "key": "advBattleTimerBackgroundOpacity"
+            }
+          ],
+          "value": {
+            "add": [
+              0.1,
+              {
+                "mul": [
+                  {
+                    "round": {
+                      "src": 0
+                    }
+                  },
+                  0.1
+                ]
+              }
+            ]
           }
         },
         {
           "op": "transform",
-          "from": "advBattleTimer.font.size",
+          "transform": "compose",
           "to": "advBattleTimer.font.size",
-          "transform": "stepIndex",
-          "args": {
-            "min": 13,
-            "step": 1
+          "sources": [
+            {
+              "key": "advBattleTimerFontSize"
+            }
+          ],
+          "value": {
+            "add": [
+              13,
+              {
+                "mul": [
+                  {
+                    "round": {
+                      "src": 0
+                    }
+                  },
+                  1
+                ]
+              }
+            ]
           }
         }
       ]

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "id": "cmtkswux1000jv014zb48kymh",
   "author": "ttaro",
   "modName": "Battle Timer",
@@ -9,6 +9,7 @@
     {
       "kind": "group",
       "key": "cmtktamd600d3v0d4gahvty3o",
+      "display": "section",
       "label": "IDS_TT_TITLE_GENERAL",
       "collapse": "expanded",
       "children": [
@@ -25,7 +26,7 @@
         {
           "kind": "group",
           "key": "cmt4us0gr0010v0rwrlec4cz4",
-          "aggregate": "inline",
+          "display": "transparent",
           "children": [
             {
               "kind": "setting",
@@ -78,6 +79,7 @@
     {
       "kind": "group",
       "key": "cmtktamdu00dov0d4raga2m0d",
+      "display": "section",
       "label": "IDS_TT_TITLE_BACKGROUND",
       "collapse": "expanded",
       "children": [

@@ -5,6 +5,7 @@
   "modName": "Battle Timer",
   "slug": "battle-timer",
   "order": 19,
+  "migrationVersion": 1,
   "tree": [
     {
       "kind": "group",

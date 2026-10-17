@@ -269,7 +269,7 @@
         (block
             (class $MiddleAlignedAbsolutely)
             (style
-                (backgroundImage = "'url:../ttaro_battle_timer/gradient_mask.png'")
+                (backgroundImage = "'url:../ttaro/advanced_battle_timer/gradient_mask.png'")
                 (backgroundSize = "autosize")
                 (top = -110)
             )
